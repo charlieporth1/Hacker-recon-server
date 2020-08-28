@@ -1,0 +1,15 @@
+env: flex
+runtime: nodejs
+threadsafe: true
+
+handlers:
+#- url: /favicon\.ico
+#  static_files: www
+#  upload: favicon\.ico
+
+- url: /static
+  static_dir: www
+- url: /people
+  static_dir: www/people
+
+

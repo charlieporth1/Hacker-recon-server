@@ -1,0 +1,71 @@
+// const keyPublishable = process.env.PUBLISHABLE_KEY;
+// const keySecret = process.env.SECRET_KEY;
+
+
+
+//Firebase Admin Setup
+var firebaseAdmin = require("firebase-admin");
+var serviceAccount = require("./studioso6b7f3firebaseadminsdk.json");
+firebaseAdmin.initializeApp({
+  credential: firebaseAdmin.credential.cert(serviceAccount),
+  databaseURL: "https://studioso-6b7f3.firebaseio.com"
+});
+
+
+function listAllUsers(nextPageToken) {
+  // List batch of users, 1000 at a time.
+  firebaseAdmin.auth().listUsers(1000, nextPageToken)
+    .then(function(listUsersResult) {
+      listUsersResult.users.forEach(function(userRecord) {
+        console.log("user", userRecord.email, userRecord.passwordHash);
+      });
+      if (listUsersResult.pageToken) {
+        // List next batch of users.
+        listAllUsers(listUsersResult.pageToken)
+      }
+    })
+    .catch(function(error) {
+      console.log("Error listing users:", error);
+    });
+}
+// Start listing users from the beginning, 1000 at a time.
+//listAllUsers();
+
+function deleteAnonymousUsers(nextPageToken) {
+ firebaseAdmin
+    .auth()
+    .listUsers(1000, nextPageToken)
+    .then(function(listUsersResult) {
+      listUsersResult.users.forEach(function(userRecord) {
+      //if (userRecord.providerData.length = 0) { //this user is anonymous
+	console.log("user", userRecord.email, userRecord.passwordHash)      
+var email = new String(userRecord.email);
+var passwd = new String(userRecord.passwordHash);
+var isnull = new String("undefined");
+var isEquelE = JSON.stringify(email) === JSON.stringify(isnull);
+var isEquelP = JSON.stringify(passwd) === JSON.stringify(isnull);
+console.log("is anyon ", isEquelE, isEquelP);
+	if  (isEquelE && isEquelP ) { //this user is anonymous
+//         console.log(userRecord); // do your delete here
+          firebaseAdmin.auth().deleteUser(userRecord.uid)
+            .then(function() {
+                console.log("Successfully deleted user");
+            })
+            .catch(function(error) {
+                console.log("Error deleting user:", error);
+            });
+        }
+      });
+      if (listUsersResult.pageToken) {
+        // List next batch of users.
+//        listAllUsers(listUsersResult.pageToken);
+        deleteAnonymousUsers(listUsersResult.pageToken);
+
+      }
+    })
+    .catch(function(error) {
+      console.log('Error listing users:', error);
+    });
+}
+
+deleteAnonymousUsers();
